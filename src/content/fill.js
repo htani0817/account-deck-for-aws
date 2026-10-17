@@ -1,5 +1,7 @@
 // AWSサインインページ(signin.aws.amazon.com)に埋め込まれるコンテンツスクリプト。
-// ポップアップから遷移した直後だけ、キューに積まれたアカウントID/ユーザー名/パスワードを1回だけ自動入力する。
+// ポップアップの「開く」で作られたタブでだけ、バックグラウンドから受け取ったアカウントID/ユーザー名/パスワードを
+// 自動入力する。値はタブごとに用意され、入力を終えたら（または時間切れで）バックグラウンドに破棄を頼む。
+// AWSはリダイレクトをはさむことがあるので、値は受け取った時点では消さない（途中のページで使い切らないため）。
 //
 // AWS側はReact(Next.js)でサインインフォームを画面表示後に動的生成し、id/name等の属性名も
 // 固定ではないため、構造的な手掛かり（type="password"を起点に、同じフォーム内にある空の
@@ -111,26 +113,6 @@
     element.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  function showToast(message, isError) {
-    const toast = document.createElement("div");
-    toast.textContent = `AWS環境ランチャー: ${message}`;
-    Object.assign(toast.style, {
-      position: "fixed",
-      top: "16px",
-      right: "16px",
-      zIndex: "2147483647",
-      background: isError ? "#d13212" : "#232f3e",
-      color: "#fff",
-      padding: "8px 14px",
-      borderRadius: "4px",
-      fontSize: "13px",
-      fontFamily: "Meiryo UI, sans-serif",
-      boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-    });
-    document.documentElement.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
-  }
-
   async function tryFillOnce(entry, filled) {
     let didFill = false;
 
@@ -191,12 +173,17 @@
     return usernameDone && passwordDone;
   }
 
+  function finish(messageKey, tone) {
+    chrome.runtime.sendMessage({ type: "pendingDone" }).catch(() => {});
+    accountDeckToast(messageKey, tone);
+  }
+
   async function watchAndFill(entry) {
     const filled = { account: false, username: false, password: false };
 
     if (await tryFillOnce(entry, filled)) {
       if (isDone(entry, filled)) {
-        showToast("ユーザー名/パスワードを自動入力しました");
+        finish("toastFilled");
         return;
       }
     }
@@ -208,7 +195,7 @@
       if (didFill && isDone(entry, filled)) {
         settled = true;
         observer.disconnect();
-        showToast("ユーザー名/パスワードを自動入力しました");
+        finish("toastFilled");
       }
     });
     observer.observe(document.documentElement, {
@@ -221,18 +208,20 @@
       settled = true;
       observer.disconnect();
       if (filled.username || filled.password || filled.account) {
-        showToast("一部の項目のみ自動入力しました（残りは手動で入力してください）");
+        finish("toastFilledPartly");
       } else {
-        showToast(
-          "入力欄が見つからず自動入力できませんでした（手動で入力してください）",
-          true
-        );
+        finish("toastFillFailed", "warn");
       }
     }, FILL_TIMEOUT_MS);
   }
 
   (async function main() {
-    const entry = await consumePendingFill();
+    let entry = null;
+    try {
+      entry = await chrome.runtime.sendMessage({ type: "peekPending", kind: "fill" });
+    } catch {
+      return; // 拡張機能の更新直後などでバックグラウンドに届かない
+    }
     if (!entry) return;
     watchAndFill(entry);
   })();

@@ -1,6 +1,5 @@
 // AWSスイッチロール画面(signin.aws.amazon.com/switchrole)に埋め込まれるコンテンツスクリプト。
-// ポップアップの「スイッチロールで開く」から遷移した直後だけ、
-// 画面上の「Switch Role」ボタンを1回だけ自動クリックする。
+// ポップアップの「開く」で作られたタブでだけ、画面上の「Switch Role」ボタンを1回だけ自動クリックする。
 //
 // このページはロール名・アカウントID・表示名がURLパラメータで渡され、画面表示後に
 // Reactが `.switch-roles` コンテナへフォームを動的挿入する。さらに、入力欄への値の反映
@@ -64,24 +63,9 @@
     return textInputs.every((el) => el.value.trim() !== "");
   }
 
-  function showToast(message, isError) {
-    const toast = document.createElement("div");
-    toast.textContent = `AWS環境ランチャー: ${message}`;
-    Object.assign(toast.style, {
-      position: "fixed",
-      top: "16px",
-      right: "16px",
-      zIndex: "2147483647",
-      background: isError ? "#d13212" : "#232f3e",
-      color: "#fff",
-      padding: "8px 14px",
-      borderRadius: "4px",
-      fontSize: "13px",
-      fontFamily: "Meiryo UI, sans-serif",
-      boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-    });
-    document.documentElement.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
+  function finish(messageKey, tone) {
+    chrome.runtime.sendMessage({ type: "pendingDone" }).catch(() => {});
+    accountDeckToast(messageKey, tone);
   }
 
   function watchAndClick() {
@@ -96,18 +80,15 @@
       if (btn && areTextFieldsPopulated(scope)) {
         settled = true;
         clearInterval(intervalId);
+        finish("toastSwitched");
         btn.click();
-        showToast("スイッチロールを実行しました");
         return;
       }
 
       if (Date.now() - startedAt > CLICK_TIMEOUT_MS) {
         settled = true;
         clearInterval(intervalId);
-        showToast(
-          "ボタンが見つからず自動実行できませんでした（手動で押してください）",
-          true
-        );
+        finish("toastSwitchFailed", "warn");
       }
     }
 
@@ -116,8 +97,13 @@
   }
 
   (async function main() {
-    const shouldSubmit = await consumePendingSwitchRoleSubmit();
-    if (!shouldSubmit) return;
+    let entry = null;
+    try {
+      entry = await chrome.runtime.sendMessage({ type: "peekPending", kind: "switch" });
+    } catch {
+      return; // 拡張機能の更新直後などでバックグラウンドに届かない
+    }
+    if (!entry) return;
     watchAndClick();
   })();
 })();

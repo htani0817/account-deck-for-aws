@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Account Deck for AWS</title>
+<link rel="stylesheet" href="styles/tokens.css" />
+<link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="bar">
+    <div class="brand">
+      <img src="icons/icon32.png" width="18" height="18" alt="" />
+      <span data-i18n="extShortName"></span>
+    </div>
+    <div class="bar-actions">
+      <button id="lockBtn" class="icon-btn" type="button" hidden></button>
+      <button id="optionsBtn" class="icon-btn" type="button" data-i18n-attr="aria-label:popupOpenOptions; title:popupOpenOptions"></button>
+    </div>
+  </header>
+
+  <div class="controls">
+    <label class="search">
+      <span class="search-icon" id="searchIcon"></span>
+      <input id="search" class="input" type="search" autocomplete="off" spellcheck="false"
+        data-i18n-attr="placeholder:popupSearchPlaceholder; aria-label:popupSearchPlaceholder" />
+    </label>
+    <div class="seg" role="tablist" id="typeTabs">
+      <button type="button" role="tab" data-type="login"><span data-i18n="typeLogin"></span><span class="count"></span></button>
+      <button type="button" role="tab" data-type="switchRole"><span data-i18n="typeSwitchRole"></span><span class="count"></span></button>
+    </div>
+  </div>
+
+  <main class="list-wrap" id="listWrap">
+    <ul id="list" class="deck" role="listbox" data-i18n-attr="aria-label:popupListLabel"></ul>
+    <div id="empty" class="empty" hidden>
+      <p id="emptyTitle" class="empty-title"></p>
+      <p id="emptyBody" class="empty-body"></p>
+      <div class="empty-actions" id="emptyActions"></div>
+    </div>
+  </main>
+
+  <footer class="keys" id="keys">
+    <span><kbd>↑</kbd><kbd>↓</kbd> <span data-i18n="popupKeySelect"></span></span>
+    <span><kbd>Enter</kbd> <span data-i18n="popupKeyOpen"></span></span>
+    <span><kbd>Esc</kbd> <span data-i18n="popupKeyClear"></span></span>
+  </footer>
+
+  <form id="unlock" class="sheet" hidden>
+    <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="unlockTitle">
+      <h2 id="unlockTitle" data-i18n="unlockTitle"></h2>
+      <p class="sheet-body" data-i18n="unlockBody"></p>
+      <input id="unlockInput" class="input" type="password" autocomplete="current-password"
+        data-i18n-attr="aria-label:fieldMasterPassword; placeholder:fieldMasterPassword" />
+      <p id="unlockError" class="field-error" role="alert" hidden data-i18n="errorWrongMasterPassword"></p>
+      <div class="sheet-actions">
+        <button type="button" id="unlockCancel" class="btn btn-quiet" data-i18n="actionCancel"></button>
+        <button type="submit" id="unlockSubmit" class="btn btn-primary" data-i18n="actionUnlock"></button>
+      </div>
+    </div>
+  </form>
+
+  <div id="toast"></div>
+
+  <script src="lib/storage.js"></script>
+  <script src="lib/vault.js"></script>
+  <script src="lib/i18n.js"></script>
+  <script src="lib/ui.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

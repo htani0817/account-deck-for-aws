@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Account Deck for AWS</title>
+<link rel="icon" href="icons/icon32.png" />
+<link rel="stylesheet" href="styles/tokens.css" />
+<link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <a class="brand" href="#environments">
+        <img src="icons/icon48.png" width="26" height="26" alt="" />
+        <span data-i18n="extName"></span>
+      </a>
+      <nav class="nav" data-i18n-attr="aria-label:navLabel">
+        <a href="#environments" data-section="environments" data-i18n="navEnvironments"></a>
+        <a href="#settings" data-section="settings" data-i18n="navSettings"></a>
+        <a href="#about" data-section="about" data-i18n="navAbout"></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <!-- 環境 -->
+    <section id="sec-environments" data-section="environments" aria-labelledby="envHeading">
+      <div class="section-head">
+        <h1 id="envHeading" data-i18n="navEnvironments"></h1>
+        <button id="addBtn" class="btn btn-primary" type="button"></button>
+      </div>
+      <div class="toolbar">
+        <div class="seg" role="tablist" id="filterTabs" data-i18n-attr="aria-label:filterLabel">
+          <button type="button" role="tab" data-filter="all"><span data-i18n="filterAll"></span><span class="count"></span></button>
+          <button type="button" role="tab" data-filter="login"><span data-i18n="typeLogin"></span><span class="count"></span></button>
+          <button type="button" role="tab" data-filter="switchRole"><span data-i18n="typeSwitchRole"></span><span class="count"></span></button>
+        </div>
+        <label class="search">
+          <span class="search-icon" id="searchIcon"></span>
+          <input id="search" class="input" type="search" autocomplete="off" spellcheck="false"
+            data-i18n-attr="placeholder:optionsSearchPlaceholder; aria-label:optionsSearchPlaceholder" />
+        </label>
+      </div>
+      <ol id="envList" class="env-list" data-i18n-attr="aria-label:navEnvironments"></ol>
+      <p id="reorderHint" class="list-hint" data-i18n="optionsReorderHint"></p>
+      <div id="envEmpty" class="empty" hidden>
+        <p id="envEmptyTitle" class="empty-title"></p>
+        <p id="envEmptyBody" class="empty-body"></p>
+        <div id="envEmptyActions" class="empty-actions"></div>
+      </div>
+    </section>
+
+    <!-- 設定 -->
+    <section id="sec-settings" data-section="settings" aria-labelledby="settingsHeading" hidden>
+      <div class="section-head">
+        <h1 id="settingsHeading" data-i18n="navSettings"></h1>
+      </div>
+
+      <div class="setting" id="securitySetting">
+        <div class="setting-intro">
+          <h2 data-i18n="securityTitle"></h2>
+          <p data-i18n="securityIntro"></p>
+        </div>
+        <div class="setting-body">
+          <p class="status" id="securityStatus"><span class="status-dot"></span><span id="securityStatusText"></span></p>
+          <p class="help" id="securityHelp"></p>
+          <div class="actions" id="securityActions"></div>
+          <div class="field inline-field" id="autoLockRow" hidden>
+            <label for="autoLock" data-i18n="fieldAutoLock"></label>
+            <select id="autoLock" class="input">
+              <option value="15" data-i18n="autoLock15"></option>
+              <option value="60" data-i18n="autoLock60"></option>
+              <option value="0" data-i18n="autoLockBrowser"></option>
+            </select>
+          </div>
+          <details class="forgot" id="forgotBox" hidden>
+            <summary data-i18n="forgotTitle"></summary>
+            <p data-i18n="forgotBody"></p>
+            <button id="resetVaultBtn" class="btn btn-danger" type="button" data-i18n="forgotAction"></button>
+          </details>
+        </div>
+      </div>
+
+      <div class="setting" id="backupSetting">
+        <div class="setting-intro">
+          <h2 data-i18n="backupTitle"></h2>
+          <p data-i18n="backupIntro"></p>
+        </div>
+        <div class="setting-body">
+          <div class="actions">
+            <button id="exportBtn" class="btn" type="button"></button>
+            <button id="importBtn" class="btn" type="button"></button>
+            <input type="file" id="importFile" accept="application/json,.json" hidden />
+          </div>
+          <p class="help" data-i18n="backupHelp"></p>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-intro">
+          <h2 data-i18n="storageTitle"></h2>
+        </div>
+        <div class="setting-body">
+          <p class="help" data-i18n="storageBody1"></p>
+          <p class="help" data-i18n="storageBody2"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- このツールについて -->
+    <section id="sec-about" data-section="about" aria-labelledby="aboutHeading" hidden>
+      <div class="section-head">
+        <h1 id="aboutHeading" data-i18n="navAbout"></h1>
+      </div>
+      <div class="about">
+        <p class="about-lead" data-i18n="aboutLead"></p>
+        <dl class="facts">
+          <dt data-i18n="aboutVersion"></dt>
+          <dd id="aboutVersion"></dd>
+          <dt data-i18n="aboutShortcut"></dt>
+          <dd><span id="aboutShortcut"></span> <button id="shortcutBtn" class="link-btn" type="button" data-i18n="aboutShortcutChange"></button></dd>
+          <dt data-i18n="aboutLinks"></dt>
+          <dd class="links">
+            <a id="linkPrivacy" target="_blank" rel="noopener" data-i18n="aboutPrivacy"></a>
+            <a id="linkSource" target="_blank" rel="noopener" data-i18n="aboutSource"></a>
+            <a id="linkIssues" target="_blank" rel="noopener" data-i18n="aboutIssues"></a>
+          </dd>
+        </dl>
+        <p class="disclaimer" data-i18n="aboutDisclaimer"></p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 環境の追加・編集 -->
+  <dialog id="itemDialog" class="dialog dialog-wide" aria-labelledby="itemDialogTitle">
+    <form id="itemForm" novalidate>
+      <div class="dialog-head">
+        <h2 id="itemDialogTitle"></h2>
+        <button type="button" class="icon-btn" data-close data-i18n-attr="aria-label:actionClose"></button>
+      </div>
+      <div class="dialog-body">
+        <div class="field">
+          <span class="label" id="typeLabel" data-i18n="fieldType"></span>
+          <div class="seg seg-radio" role="radiogroup" aria-labelledby="typeLabel">
+            <label><input type="radio" name="type" value="login" checked /><span data-i18n="typeLogin"></span></label>
+            <label><input type="radio" name="type" value="switchRole" /><span data-i18n="typeSwitchRole"></span></label>
+          </div>
+          <p class="hint" id="typeHint"></p>
+        </div>
+
+        <div class="field">
+          <label for="fName"><span data-i18n="fieldDisplayName"></span> <span class="req" data-i18n="required"></span></label>
+          <input id="fName" class="input" maxlength="60" autocomplete="off" data-i18n-attr="placeholder:fieldDisplayNamePlaceholder" />
+          <p class="field-error" id="errName" hidden></p>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="fAccount"><span data-i18n="fieldAccountId"></span> <span class="req" data-i18n="required"></span></label>
+            <input id="fAccount" class="input acct" autocomplete="off" spellcheck="false" placeholder="123456789012" />
+            <p class="hint" data-i18n="fieldAccountIdHint"></p>
+            <p class="field-error" id="errAccount" hidden></p>
+          </div>
+          <div class="field">
+            <label for="fLabel" data-i18n="fieldLabel"></label>
+            <input id="fLabel" class="input" maxlength="8" autocomplete="off" data-i18n-attr="placeholder:fieldLabelPlaceholder" />
+            <p class="hint" data-i18n="fieldLabelHint"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="label" id="colorLabel" data-i18n="fieldColor"></span>
+          <div class="swatches" id="swatches" role="radiogroup" aria-labelledby="colorLabel"></div>
+        </div>
+
+        <div class="type-fields" data-for="login">
+          <div class="field">
+            <label for="fUrl" data-i18n="fieldLoginUrl"></label>
+            <input id="fUrl" class="input" type="url" autocomplete="off" spellcheck="false" />
+            <p class="hint" data-i18n="fieldLoginUrlHint"></p>
+            <p class="field-error" id="errUrl" hidden></p>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="fUser" data-i18n="fieldUsername"></label>
+              <input id="fUser" class="input" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="field">
+              <label for="fPass" data-i18n="fieldPassword"></label>
+              <div class="pw-wrap">
+                <input id="fPass" class="input" type="password" autocomplete="new-password" spellcheck="false" />
+                <button type="button" id="togglePass" class="icon-btn"></button>
+              </div>
+              <p class="hint" id="passHint"></p>
+              <label class="check" id="clearPassRow" hidden><input type="checkbox" id="fClearPass" /> <span data-i18n="fieldClearPassword"></span></label>
+            </div>
+          </div>
+          <p class="note" data-i18n="loginFillNote"></p>
+        </div>
+
+        <div class="type-fields" data-for="switchRole" hidden>
+          <div class="field">
+            <label for="fRole"><span data-i18n="fieldRoleName"></span> <span class="req" data-i18n="required"></span></label>
+            <input id="fRole" class="input" autocomplete="off" spellcheck="false" placeholder="AdministratorRole" />
+            <p class="field-error" id="errRole" hidden></p>
+          </div>
+          <p class="note" data-i18n="switchRoleNote"></p>
+        </div>
+
+        <div class="field">
+          <label for="fMemo" data-i18n="fieldMemo"></label>
+          <input id="fMemo" class="input" maxlength="200" autocomplete="off" />
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-quiet" data-close data-i18n="actionCancel"></button>
+        <button type="submit" class="btn btn-primary" id="itemSubmit" data-i18n="actionSave"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- パスワード入力（ロック解除・マスターパスワード設定・ファイル用パスワード） -->
+  <dialog id="passwordDialog" class="dialog" aria-labelledby="pwTitle">
+    <form id="pwForm" novalidate>
+      <div class="dialog-head">
+        <h2 id="pwTitle"></h2>
+      </div>
+      <div class="dialog-body">
+        <p class="dialog-text" id="pwBody"></p>
+        <div class="field">
+          <label for="pwInput" id="pwLabel"></label>
+          <input id="pwInput" class="input" type="password" spellcheck="false" />
+        </div>
+        <div class="field" id="pwConfirmField">
+          <label for="pwConfirm" data-i18n="fieldConfirmPassword"></label>
+          <input id="pwConfirm" class="input" type="password" autocomplete="new-password" spellcheck="false" />
+        </div>
+        <p class="field-error" id="pwError" role="alert" hidden></p>
+        <p class="note" id="pwNote" hidden></p>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-quiet" data-close data-i18n="actionCancel"></button>
+        <button type="submit" class="btn btn-primary" id="pwSubmit"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 確認 -->
+  <dialog id="confirmDialog" class="dialog" aria-labelledby="cfTitle">
+    <form id="cfForm">
+      <div class="dialog-head"><h2 id="cfTitle"></h2></div>
+      <div class="dialog-body"><p class="dialog-text" id="cfBody"></p></div>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-quiet" data-close data-i18n="actionCancel"></button>
+        <button type="submit" class="btn" id="cfSubmit"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- エクスポート -->
+  <dialog id="exportDialog" class="dialog" aria-labelledby="exTitle">
+    <form id="exForm" novalidate>
+      <div class="dialog-head"><h2 id="exTitle" data-i18n="exportTitle"></h2></div>
+      <div class="dialog-body">
+        <p class="dialog-text" data-i18n="exportBody"></p>
+        <div class="choices compact" role="radiogroup">
+          <label class="choice">
+            <input type="radio" name="exPass" value="include" checked />
+            <span class="choice-title" data-i18n="exportInclude"></span>
+            <span class="choice-text" data-i18n="exportIncludeText"></span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="exPass" value="exclude" />
+            <span class="choice-title" data-i18n="exportExclude"></span>
+            <span class="choice-text" data-i18n="exportExcludeText"></span>
+          </label>
+        </div>
+        <div id="exPassFields">
+          <div class="field">
+            <label for="exPass1" data-i18n="fieldFilePassword"></label>
+            <input id="exPass1" class="input" type="password" autocomplete="new-password" />
+            <p class="hint" data-i18n="fieldFilePasswordHint"></p>
+          </div>
+          <div class="field">
+            <label for="exPass2" data-i18n="fieldConfirmPassword"></label>
+            <input id="exPass2" class="input" type="password" autocomplete="new-password" />
+          </div>
+        </div>
+        <p class="field-error" id="exError" role="alert" hidden></p>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-quiet" data-close data-i18n="actionCancel"></button>
+        <button type="submit" class="btn btn-primary" data-i18n="exportAction"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 初回案内 -->
+  <div id="welcome" class="welcome" hidden>
+    <div class="welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+      <img src="icons/icon128.png" width="56" height="56" alt="" class="welcome-mark" />
+      <h1 id="welcomeTitle" data-i18n="welcomeTitle"></h1>
+      <p class="welcome-lead" data-i18n="welcomeLead"></p>
+      <ol class="steps">
+        <li data-step="1" data-i18n="welcomeStep1"></li>
+        <li data-step="2" data-i18n="welcomeStep2"></li>
+      </ol>
+
+      <form id="welcomeStep1" novalidate>
+        <h2 data-i18n="welcomeProtectTitle"></h2>
+        <div class="choices" role="radiogroup">
+          <label class="choice">
+            <input type="radio" name="protect" value="master" checked />
+            <span class="choice-title"><span data-i18n="welcomeMaster"></span> <span class="pill" data-i18n="recommended"></span></span>
+            <span class="choice-text" data-i18n="welcomeMasterText"></span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="protect" value="device" />
+            <span class="choice-title" data-i18n="welcomeDevice"></span>
+            <span class="choice-text" data-i18n="welcomeDeviceText"></span>
+          </label>
+        </div>
+        <div id="welcomeMasterFields" class="grid-2">
+          <div class="field">
+            <label for="wPass1" data-i18n="fieldMasterPassword"></label>
+            <input id="wPass1" class="input" type="password" autocomplete="new-password" />
+            <p class="hint" data-i18n="masterPasswordHint"></p>
+          </div>
+          <div class="field">
+            <label for="wPass2" data-i18n="fieldConfirmPassword"></label>
+            <input id="wPass2" class="input" type="password" autocomplete="new-password" />
+          </div>
+        </div>
+        <p class="field-error" id="welcomeError" role="alert" hidden></p>
+        <div class="welcome-actions">
+          <button type="submit" class="btn btn-primary" id="welcomeNext" data-i18n="actionContinue"></button>
+        </div>
+      </form>
+
+      <div id="welcomeStep2" hidden>
+        <h2 data-i18n="welcomeFirstTitle"></h2>
+        <p class="help" data-i18n="welcomeFirstBody"></p>
+        <div class="welcome-actions">
+          <button type="button" class="btn btn-quiet" id="welcomeLater" data-i18n="actionLater"></button>
+          <button type="button" class="btn" id="welcomeImport" data-i18n="actionImport"></button>
+          <button type="button" class="btn btn-primary" id="welcomeAdd" data-i18n="actionAddEnv"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="lib/storage.js"></script>
+  <script src="lib/vault.js"></script>
+  <script src="lib/i18n.js"></script>
+  <script src="lib/ui.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

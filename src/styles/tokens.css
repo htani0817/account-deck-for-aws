@@ -1,0 +1,314 @@
+/* 色・文字・余白の共通トークン。OS の設定に合わせてライト/ダークを切り替える */
+:root {
+  color-scheme: light dark;
+
+  --canvas: #e9edf1;
+  --surface: #ffffff;
+  --surface-2: #f4f6f8;
+  --surface-hover: #eef2f5;
+  --seg-active: #ffffff;
+  --ink: #18202b;
+  --ink-2: #4a5565;
+  --ink-3: #636e7e;
+  --line: #d5dbe2;
+  --line-strong: #b9c2cd;
+  --accent: #0b6e69;
+  --accent-hover: #095c58;
+  --on-accent: #ffffff;
+  --accent-soft: #dcefed;
+  --danger: #b42318;
+  --danger-soft: #fbe5e2;
+  --tab-empty: #c9d1da;
+  --tab-ink: #18202b;
+  --shadow-pop: 0 12px 32px rgba(16, 24, 40, 0.18), 0 2px 6px rgba(16, 24, 40, 0.08);
+
+  --font-ui: "Segoe UI Variable Text", "Segoe UI", "Yu Gothic UI", "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN", "Meiryo UI", system-ui, sans-serif;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --focus: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #12161c;
+    --surface: #1a1f27;
+    --surface-2: #212732;
+    --surface-hover: #262d39;
+    --seg-active: #354050;
+    --ink: #e7ebf0;
+    --ink-2: #b3bcc8;
+    --ink-3: #95a0ae;
+    --line: #2e3542;
+    --line-strong: #414a59;
+    --accent: #5cc8be;
+    --accent-hover: #7ad6cd;
+    --on-accent: #0b1f1e;
+    --accent-soft: #173a38;
+    --danger: #f2867b;
+    --danger-soft: #3b1f1d;
+    --tab-empty: #3a4352;
+    --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+svg.icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* アカウントIDは等幅フォントにせず、数字幅だけをそろえて桁を比べやすくする */
+.acct {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* ボタン */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 120ms var(--ease), border-color 120ms var(--ease);
+}
+
+.btn:hover {
+  background: var(--surface-hover);
+}
+
+.btn-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn-primary:hover {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+}
+
+.btn-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: transparent;
+}
+
+.btn-danger:hover {
+  background: var(--danger-soft);
+}
+
+.btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-2);
+}
+
+.btn-quiet:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-2);
+  transition: background-color 120ms var(--ease), color 120ms var(--ease);
+}
+
+.icon-btn:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.icon-btn[disabled] {
+  opacity: 0.35;
+  cursor: default;
+  background: transparent;
+}
+
+.icon-btn.is-done {
+  color: var(--accent);
+}
+
+/* 入力欄 */
+.input {
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+
+.input::placeholder {
+  color: var(--ink-3);
+}
+
+.input:focus-visible {
+  border-color: var(--accent);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+/* 環境色のタブ（この製品でいちばん目立たせる要素）。
+   行の左端に差し込んだインデックスの見出しのように、ラベルを縦書きで載せる */
+.env-tab {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  align-self: stretch;
+  border-radius: var(--r-sm) 0 0 var(--r-sm);
+  background: var(--env, var(--tab-empty));
+  color: var(--env-ink, var(--tab-ink));
+  overflow: hidden;
+}
+
+/* 英字は横倒し、日本語は正立のまま、どちらも上から下へ読む */
+.env-tab span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* トースト */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100% - 24px);
+  padding: 8px 8px 8px 14px;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--surface);
+  box-shadow: var(--shadow-pop);
+  transform: translateX(-50%);
+  animation: toast-in 160ms var(--ease);
+}
+
+.toast:not(:has(button)) {
+  padding-right: 14px;
+}
+
+.toast.is-warn {
+  background: var(--danger);
+  color: #fff;
+}
+
+.toast button {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+}
+
+kbd {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 4px;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 10.5px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
