@@ -1,0 +1,6 @@
+# 申請用 ZIP などの生成物
+dist/
+node_modules/
+store-assets/_work/
+# Google ドライブ同期で生まれる重複ファイル
+*(1).*
