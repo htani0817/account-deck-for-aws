@@ -1,0 +1,19 @@
+{
+  "name": "account-deck-for-aws",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AWS のサインインURLとスイッチロールを一覧にまとめ、ワンクリックで開く Chrome 拡張機能",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "e2e": "node --test --test-concurrency=1 tests/e2e.mjs",
+    "review": "node scripts/render-assets.mjs review",
+    "icons": "node scripts/render-assets.mjs icons",
+    "screenshots": "node scripts/render-assets.mjs screenshots",
+    "package": "node scripts/package.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.49.1"
+  }
+}

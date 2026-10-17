@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 重ねたカード（奥から手前へ）。絵柄は 96px の中に収め、周りに 16px の余白を取る -->
+  <rect x="40" y="20" width="72" height="58" rx="11" fill="#A9DCD6"/>
+  <rect x="28" y="32" width="72" height="58" rx="11" fill="#3FA59C"/>
+  <rect x="16" y="46" width="72" height="62" rx="11" fill="#0B6E69"/>
+  <!-- 手前のカードの左端に差し込んだ環境色のタブ -->
+  <path d="M27 46h4v62h-4a11 11 0 0 1-11-11V57a11 11 0 0 1 11-11z" fill="#F2B0A9"/>
+  <!-- 開く（外へ出る）矢印 -->
+  <path d="M46 94 70 70M54 68h17v17" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
