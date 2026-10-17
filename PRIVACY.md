@@ -28,7 +28,7 @@ Account Deck for AWS（以下「本拡張機能」）
 
 本拡張機能は、データを開発者や第三者のサーバーへ送信しません。アクセス解析や広告、外部のスクリプトも使いません。
 
-利用者が「開く」を押したときに限り、登録したアカウントID・ユーザー名・パスワードを、本拡張機能が開いたタブの AWS サインイン画面（`signin.aws.amazon.com` とそのサブドメイン）の入力欄に入力します。本拡張機能はサインインボタンを押しません。入力した内容を AWS へ送るかどうかは、利用者がサインインボタンを押して決めます。
+利用者が「開く」を押したときに限り、登録したアカウントID・ユーザー名・パスワードを、本拡張機能が開いたタブの AWS サインイン画面（`signin.aws.amazon.com` とそのサブドメイン）の入力欄に入力し、サインインボタンを1回押します。これにより、入力した内容はサインインのために AWS へ送られます（AWS のサインイン画面を手で使ったときと同じ送り先です）。パスワードを保存していない環境では、入力だけでボタンは押しません。
 
 ### 権限
 
@@ -74,7 +74,7 @@ Your master password itself is never stored.
 
 The extension does not send your data to the developer or any third party. It uses no analytics, no advertising and no remote scripts.
 
-Only when you press Open, the extension fills your saved account ID, user name and password into the AWS sign-in page (`signin.aws.amazon.com` and its subdomains) in the tab the extension opened. It never presses the Sign in button; you decide whether to submit the form to AWS.
+Only when you press Open, the extension fills your saved account ID, user name and password into the AWS sign-in page (`signin.aws.amazon.com` and its subdomains) in the tab the extension opened, and presses the Sign in button once. This sends what was filled in to AWS to sign you in, the same destination as when you use the AWS sign-in page by hand. For environments without a saved password, it only fills the form and does not press the button.
 
 ### Permissions
 

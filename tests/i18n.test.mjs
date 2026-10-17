@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 import { SRC } from "./helpers.mjs";
 
 function walk(dir) {
@@ -58,6 +59,36 @@ test("en と ja のキーが一致している", () => {
     en.filter((k) => !ja.includes(k)).concat(ja.filter((k) => !en.includes(k))),
     []
   );
+});
+
+test("getMessage が空文字を返しても、文言ファイルを直接読んで表示できる", async () => {
+  const chrome = {
+    i18n: { getMessage: () => "", getUILanguage: () => "ja" },
+    runtime: { getURL: (p) => p },
+  };
+  const fetch = async (url) => ({
+    json: async () => JSON.parse(readFileSync(path.join(SRC, url), "utf8")),
+  });
+  const context = vm.createContext({ chrome, fetch, navigator: { language: "ja" }, console });
+  vm.runInContext(readFileSync(path.join(SRC, "lib/i18n.js"), "utf8"), context);
+  const t = (...args) => vm.runInContext("t", context)(...args);
+
+  assert.equal(t("navEnvironments"), "navEnvironments", "読み込む前はキー名");
+  await vm.runInContext("loadI18n()", context);
+  assert.equal(t("navEnvironments"), "環境");
+  assert.equal(t("popupNoMatchTitle", ["abc"]), "「abc」に一致する環境はありません");
+  assert.equal(t("noSuchKey"), "noSuchKey");
+});
+
+test("ページ内トーストの予備の文言が _locales と一致している", () => {
+  const context = vm.createContext({});
+  vm.runInContext(readFileSync(path.join(SRC, "content/toast.js"), "utf8"), context);
+  const fallback = vm.runInContext("ACCOUNT_DECK_TOAST_FALLBACK", context);
+  for (const [lang, messages] of Object.entries(fallback)) {
+    for (const [key, text] of Object.entries(messages)) {
+      assert.equal(text, locales[lang][key].message, `${lang}:${key}`);
+    }
+  }
 });
 
 test("ストアの説明文は132文字以内", () => {

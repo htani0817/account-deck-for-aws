@@ -1,9 +1,57 @@
-// AWSのページ上に出す通知。ページ側のCSSに崩されないよう Shadow DOM の中に描く。
-// fill.js / switchrole.js から accountDeckToast() を呼ぶ（コンテンツスクリプト同士は同じ空間を共有する）。
+// AWSのページ上に出す通知と、バックグラウンドへの問い合わせの共通部品。
+// 通知はページ側のCSSに崩されないよう Shadow DOM の中に描く。
+// fill.js / switchrole.js から呼ぶ（コンテンツスクリプト同士は同じ空間を共有する）。
+
+/**
+ * このタブ用の受け渡しの値をバックグラウンドに尋ねる。無ければ null。
+ * service worker の起動直後などで問い合わせが失敗したときは、少し待ってやり直す
+ */
+// eslint-disable-next-line no-unused-vars
+async function accountDeckPeek(kind) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      return await chrome.runtime.sendMessage({ type: "peekPending", kind });
+    } catch {
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  }
+  return null;
+}
+
+// getMessage が空文字を返したときの予備（_locales と同じ文言。変えるときは両方直す）
+const ACCOUNT_DECK_TOAST_FALLBACK = {
+  en: {
+    extName: "Account Deck for AWS",
+    toastFilled: "Filled in your sign-in details. Check them and sign in.",
+    toastFilledPartly: "Filled in some fields. Enter the rest yourself.",
+    toastFillFailed: "Couldn't find the sign-in fields. Enter your details yourself.",
+    toastSigningIn: "Filled in your sign-in details. Signing in…",
+    toastSubmitNotFound: "Couldn't find the Sign in button. Press it yourself.",
+    toastSwitched: "Switching role…",
+    toastSwitchFailed: "Couldn't find the Switch Role button. Press it yourself.",
+  },
+  ja: {
+    extName: "Account Deck for AWS",
+    toastFilled: "サインイン情報を入力しました。確かめてからサインインしてください。",
+    toastFilledPartly: "一部の欄だけ入力しました。残りは手で入力してください。",
+    toastFillFailed: "入力欄が見つかりませんでした。手で入力してください。",
+    toastSigningIn: "サインイン情報を入力して、サインインしています…",
+    toastSubmitNotFound: "サインインボタンが見つかりませんでした。手で押してください。",
+    toastSwitched: "ロールを切り替えています…",
+    toastSwitchFailed: "Switch Role ボタンが見つかりませんでした。手で押してください。",
+  },
+};
+
+function accountDeckMessage(key) {
+  const message = chrome.i18n.getMessage(key);
+  if (message) return message;
+  const lang = (chrome.i18n.getUILanguage() || navigator.language || "en").toLowerCase().startsWith("ja") ? "ja" : "en";
+  return ACCOUNT_DECK_TOAST_FALLBACK[lang][key] || key;
+}
 
 // eslint-disable-next-line no-unused-vars
 function accountDeckToast(messageKey, tone) {
-  const text = chrome.i18n.getMessage(messageKey) || messageKey;
+  const text = accountDeckMessage(messageKey);
   const host = document.createElement("div");
   host.setAttribute("data-account-deck", "");
   const root = host.attachShadow({ mode: "closed" });
@@ -37,7 +85,7 @@ function accountDeckToast(messageKey, tone) {
     </div>`;
   const box = root.querySelector(".toast");
   if (tone === "warn") box.classList.add("warn");
-  root.querySelector(".name").textContent = chrome.i18n.getMessage("extName");
+  root.querySelector(".name").textContent = accountDeckMessage("extName");
   root.querySelector(".msg").textContent = text;
   document.documentElement.appendChild(host);
   setTimeout(() => host.remove(), 5000);

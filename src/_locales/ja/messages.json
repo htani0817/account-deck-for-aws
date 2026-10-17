@@ -10,7 +10,7 @@
 
   "typeLogin": { "message": "ログイン" },
   "typeSwitchRole": { "message": "スイッチロール" },
-  "typeLoginHint": { "message": "AWS のサインイン画面を開き、アカウント・ユーザー名・パスワードを入力します。" },
+  "typeLoginHint": { "message": "AWS のサインイン画面を開き、アカウント・ユーザー名・パスワードを入力してサインインします。" },
   "typeSwitchRoleHint": { "message": "別のアカウントのロールに切り替えます。先に AWS コンソールへサインインしておきます。" },
 
   "actionOpen": { "message": "開く" },
@@ -78,6 +78,8 @@
   "toastLocked": { "message": "ロックしました" },
   "toastFilled": { "message": "サインイン情報を入力しました。確かめてからサインインしてください。" },
   "toastFilledPartly": { "message": "一部の欄だけ入力しました。残りは手で入力してください。" },
+  "toastSigningIn": { "message": "サインイン情報を入力して、サインインしています…" },
+  "toastSubmitNotFound": { "message": "サインインボタンが見つかりませんでした。手で押してください。" },
   "toastFillFailed": { "message": "入力欄が見つかりませんでした。手で入力してください。" },
   "toastSwitched": { "message": "ロールを切り替えています…" },
   "toastSwitchFailed": { "message": "Switch Role ボタンが見つかりませんでした。手で押してください。" },
@@ -126,7 +128,7 @@
   "passwordEncryptedHint": { "message": "暗号化してこの端末に保存します。" },
   "passwordSavedHint": { "message": "保存済みです。変えるときだけ入力してください。" },
   "fieldClearPassword": { "message": "保存したパスワードを消す" },
-  "loginFillNote": { "message": "「開く」はサインイン画面に入力するだけです。サインインボタンの押下や MFA の入力はしません。" },
+  "loginFillNote": { "message": "「開く」を押すと、サインイン画面に入力してサインインボタンまで押します（パスワードを保存していない場合は入力まで）。MFA を設定しているときは、そのあとでコードを入力してください。" },
   "fieldRoleName": { "message": "ロール名" },
   "switchRoleNote": { "message": "スイッチロールは、AWS マネジメントコンソールにサインインしたあとで使えます。" },
   "fieldMemo": { "message": "メモ" },
@@ -193,11 +195,6 @@
   "aboutShortcut": { "message": "ポップアップを開くキー" },
   "aboutShortcutNone": { "message": "設定されていません" },
   "aboutShortcutChange": { "message": "変更する" },
-  "aboutLinks": { "message": "リンク" },
-  "aboutPrivacy": { "message": "プライバシーポリシー" },
-  "aboutProductPage": { "message": "紹介ページ" },
-  "aboutSource": { "message": "ソースコード" },
-  "aboutIssues": { "message": "不具合を報告" },
   "aboutDisclaimer": { "message": "Account Deck for AWS は個人が開発したツールで、Amazon Web Services, Inc. およびその関連会社とは関係がなく、承認や後援も受けていません。AWS、Amazon Web Services は Amazon.com, Inc. またはその関連会社の商標です。" },
 
   "welcomeTitle": { "message": "Account Deck for AWS へようこそ" },

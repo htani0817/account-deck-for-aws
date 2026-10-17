@@ -6,7 +6,6 @@ body {
 body {
   display: flex;
   flex-direction: column;
-  min-height: 300px;
   max-height: 600px;
 }
 

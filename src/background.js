@@ -1,9 +1,7 @@
-// バックグラウンド（Chrome では service worker、Firefox では manifest の scripts で読み込む）。
+// バックグラウンド（service worker）。
 // - ポップアップからの「開く」を受けてタブを作り、そのタブだけに自動入力の値を渡す
 // - 初回インストール時に管理画面の初回案内を開き、v1 からの更新時はデータを移行する
-if (typeof importScripts === "function") {
-  importScripts("lib/storage.js", "lib/vault.js");
-}
+importScripts("lib/storage.js", "lib/vault.js");
 
 const PENDING_KEY = "pendingLaunches";
 const PENDING_TTL_MS = 2 * 60 * 1000; // 2分を過ぎた受け渡しは破棄する
@@ -64,10 +62,13 @@ async function handleLaunch(itemId) {
     };
   }
 
-  const tab = await chrome.tabs.create({ url });
+  // 受け渡しの値を登録してから AWS のページへ移る（v1 と同じく「値を用意 → 開く」の順にし、
+  // ページの読み込みが速くても、コンテンツスクリプトが値を取りに来たときに必ず用意できているようにする）
+  const tab = await chrome.tabs.create({ url: "about:blank" });
   const all = await readPending();
   all[String(tab.id)] = { ...entry, createdAt: Date.now() };
   await writePending(all);
+  await chrome.tabs.update(tab.id, { url });
   return { ok: true };
 }
 

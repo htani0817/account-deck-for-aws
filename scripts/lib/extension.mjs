@@ -23,16 +23,23 @@ export const SAMPLE_ITEMS = [
 ];
 
 /** 拡張機能を読み込んだ Chromium を起動し、拡張機能のIDを返す */
-export async function launchWithExtension({ locale = "ja", colorScheme = "light", extraArgs = [] } = {}) {
+export async function launchWithExtension({
+  locale = "ja",
+  colorScheme = "light",
+  extraArgs = [],
+  deviceScaleFactor = 1,
+  extensionPath = SRC,
+} = {}) {
   const userDataDir = path.join(os.tmpdir(), `account-deck-profile-${process.pid}-${Date.now()}`);
   const context = await chromium.launchPersistentContext(userDataDir, {
     headless: false,
     locale,
     colorScheme,
+    deviceScaleFactor,
     args: [
       "--headless=new",
-      `--disable-extensions-except=${SRC}`,
-      `--load-extension=${SRC}`,
+      `--disable-extensions-except=${extensionPath}`,
+      `--load-extension=${extensionPath}`,
       `--lang=${locale}`,
       ...extraArgs,
     ],

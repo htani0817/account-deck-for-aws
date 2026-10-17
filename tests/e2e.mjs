@@ -25,28 +25,46 @@ const consolePage = `<!doctype html><title>redirecting</title><script>
   setTimeout(() => location.replace("https://ap-northeast-1.signin.aws.amazon.com/oauth?client_id=test"), 300);
 </script>`;
 
-// サインインフォームは React のように表示後に作る。id は付けず、プレースホルダで見分けさせる
+// サインインフォームは React のように表示後に作る。id は付けず、プレースホルダで見分けさせる。
+// 本物と同じく、いったん表示した欄を作り直したり（ハイドレーション）、値を空に戻したりして、
+// 入れた値が消されても入れ直すかを確かめる
 const signinPage = `<!doctype html><title>Sign in</title><div id="root"></div><script>
-  setTimeout(() => {
+  const render = () => {
     document.getElementById("root").innerHTML =
       '<form onsubmit="return false">' +
       '<input type="text" placeholder="Account ID (12 digits) or account alias">' +
       '<input type="text" placeholder="IAM username">' +
       '<input type="password" placeholder="Password">' +
       '<button type="submit">Sign in</button></form>';
-  }, 600);
+  };
+  setTimeout(render, 600);
+  setTimeout(render, 1500); // 欄を丸ごと作り直す
+  setTimeout(() => document.querySelectorAll("input").forEach((i) => { i.value = ""; }), 2500); // 値だけ空に戻す
+  // 送信されたら、送られた値と回数を title に残す
+  let submits = 0;
+  document.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submits += 1;
+    document.title = "SUBMITTED" + submits + ":" + [...document.querySelectorAll("form input")].map((i) => i.value).join("|");
+  });
 </script>`;
 
-// スイッチロール画面: URLパラメータを入力欄に入れてから Switch Role ボタンを出す。押されたら title を変える
+// スイッチロール画面: URLパラメータを入力欄に入れてから Switch Role ボタンを出す。押されたら title を変える。
+// 最初の描画ではボタンを押しても何も起きない（React が管理を始める前の再現）。1.5 秒後に作り直してから反応する
 const switchRolePage = `<!doctype html><title>Switch role</title><div class="switch-roles"></div><script>
   const p = new URLSearchParams(location.search);
-  setTimeout(() => {
+  const render = (live) => {
     document.querySelector(".switch-roles").innerHTML =
       '<form><input name="account"><input name="role"><input name="name"><button type="submit">Switch Role</button></form>';
     const [a, r, n] = document.querySelectorAll("input");
     a.value = p.get("account"); r.value = p.get("roleName"); n.value = p.get("displayName");
-    document.querySelector("form").addEventListener("submit", (e) => { e.preventDefault(); document.title = "SWITCHED:" + p.get("roleName"); });
-  }, 500);
+    document.querySelector("form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (live) document.title = "SWITCHED:" + p.get("roleName");
+    });
+  };
+  setTimeout(() => render(false), 500);
+  setTimeout(() => render(true), 1500);
 </script>`;
 
 function findOpenssl() {
@@ -107,6 +125,18 @@ async function waitForCount(page, selector, count, timeout = 10000) {
   throw new Error(`${selector} が ${count} 個になりませんでした`);
 }
 
+/** 入力されるのを待ち、偽ページが値を消す時刻（2.5 秒）を過ぎてから戻る（入れ直されたかを見るため） */
+async function waitFilledAfterResets(page, selector = 'input[type="password"]') {
+  await page.waitForFunction((s) => document.querySelector(s)?.value, selector, { timeout: 15000 });
+  await page.waitForTimeout(3500);
+}
+
+/** サインインボタンが押されるのを待ち、送信された値（title）を返す */
+async function waitSubmitted(page) {
+  await page.waitForFunction(() => document.title.startsWith("SUBMITTED"), null, { timeout: 15000 });
+  return page.title();
+}
+
 async function signinValues(page) {
   await page.waitForSelector('input[type="password"]');
   return page.$$eval("form input", (inputs) => inputs.map((i) => i.value));
@@ -164,14 +194,23 @@ async function ensureUnlockedForTest(page) {
   }, MASTER);
 }
 
-test("開く: リダイレクトをはさんでも、作ったタブのサインイン画面に入力される", async () => {
+test("開く: リダイレクトや画面の作り直しをはさんでも入力し、サインインボタンを1回だけ押す", async () => {
   const tab = await launchFromPopup("本番環境");
   await tab.waitForURL(/ap-northeast-1\.signin\.aws\.amazon\.com\/oauth/);
-  await tab.waitForFunction(() => document.querySelector('input[type="password"]')?.value !== "", null, { timeout: 15000 });
-  assert.deepEqual(await signinValues(tab), ["111122223333", "ops-admin", "sample-password-1"]);
-  // 入力が済んだら受け渡しの値は消える
-  await tab.waitForTimeout(300);
+  // 欄の作り直し（1.5 秒）と値の消去（2.5 秒）のあとに、正しい値で1回だけ送信される
+  assert.equal(await waitSubmitted(tab), "SUBMITTED1:111122223333|ops-admin|sample-password-1");
+  await tab.waitForTimeout(3000);
+  assert.equal(await tab.title(), "SUBMITTED1:111122223333|ops-admin|sample-password-1", "2回目は押さない");
+  // 押した時点で受け渡しの値は消える
   assert.deepEqual(await pending(), {});
+  await tab.close();
+});
+
+test("パスワードを保存していない環境は、入力するだけで押さない", async () => {
+  const tab = await launchFromPopup("検証用サンドボックス");
+  await waitFilledAfterResets(tab, '#root input[placeholder="IAM username"]');
+  assert.deepEqual(await signinValues(tab), ["123412341234", "sandbox", ""]);
+  assert.ok(!(await tab.title()).startsWith("SUBMITTED"));
   await tab.close();
 });
 
@@ -182,13 +221,13 @@ test("拡張機能が作っていないタブには値を渡さない", async ()
   await stranger.goto("https://ap-northeast-1.signin.aws.amazon.com/oauth?client_id=other");
   await stranger.waitForTimeout(2500);
   assert.deepEqual(await signinValues(stranger), ["", "", ""]);
-  await popupTab.waitForFunction(() => document.querySelector('input[type="password"]')?.value !== "", null, { timeout: 15000 });
-  assert.deepEqual(await signinValues(popupTab), ["444455556666", "ops-admin", "sample-password-2"]);
+  assert.ok(!(await stranger.title()).startsWith("SUBMITTED"));
+  assert.equal(await waitSubmitted(popupTab), "SUBMITTED1:444455556666|ops-admin|sample-password-2");
   await stranger.close();
   await popupTab.close();
 });
 
-test("スイッチロール: 値が入ってから Switch Role ボタンを押す", async () => {
+test("スイッチロール: 最初に押したのが無視されても、押し直して切り替える", async () => {
   const tab = await launchFromPopup("開発 管理者", { type: "switchRole" });
   await tab.waitForFunction(() => document.title.startsWith("SWITCHED"), null, { timeout: 15000 });
   assert.equal(await tab.title(), "SWITCHED:AdministratorRole");
@@ -227,8 +266,7 @@ test("マスターパスワード: ロック中は解除を求め、正しく入
 
   await popup.fill("#unlockInput", MASTER);
   const [tab] = await Promise.all([ctx.context.waitForEvent("page"), popup.click("#unlockSubmit")]);
-  await tab.waitForFunction(() => document.querySelector('input[type="password"]')?.value !== "", null, { timeout: 15000 });
-  assert.deepEqual(await signinValues(tab), ["777788889999", "dev-user", "sample-password-3"]);
+  assert.equal(await waitSubmitted(tab), "SUBMITTED1:777788889999|dev-user|sample-password-3");
   await tab.close();
 });
 

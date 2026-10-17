@@ -362,6 +362,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
 });
 
 async function init() {
+  await loadI18n();
   applyI18n();
   $("searchIcon").append(icon("search"));
   $("optionsBtn").append(icon("settings"));

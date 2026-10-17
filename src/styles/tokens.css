@@ -71,6 +71,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* 日本語は文節の切れ目で折り返す（対応していないブラウザでは通常の折り返し） */
+html:lang(ja) body {
+  word-break: auto-phrase;
+}
+
 button,
 input,
 select,

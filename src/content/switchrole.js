@@ -1,5 +1,6 @@
 // AWSスイッチロール画面(signin.aws.amazon.com/switchrole)に埋め込まれるコンテンツスクリプト。
-// ポップアップの「開く」で作られたタブでだけ、画面上の「Switch Role」ボタンを1回だけ自動クリックする。
+// ポップアップの「開く」で作られたタブでだけ、画面上の「Switch Role」ボタンを自動クリックする
+// （押したことが無視されて画面が変わらないときは、数回まで押し直す）。
 //
 // このページはロール名・アカウントID・表示名がURLパラメータで渡され、画面表示後に
 // Reactが `.switch-roles` コンテナへフォームを動的挿入する。さらに、入力欄への値の反映
@@ -68,26 +69,52 @@
     accountDeckToast(messageKey, tone);
   }
 
+  // 押せる状態がこの時間続いてから押す（React が画面を管理し始める前に押すと、押したことが無視される）
+  const READY_DELAY_MS = 700;
+  // 押したのに画面が変わらなければ（押したことが無視された）、この間隔で押し直す。何度押しても同じロールに切り替わるだけ
+  const RETRY_INTERVAL_MS = 4000;
+  const MAX_CLICKS = 3;
+
   function watchAndClick() {
     const startedAt = Date.now();
+    let readySince = null;
+    let clicks = 0;
+    let lastClickAt = 0;
     let settled = false;
+
+    function stop() {
+      settled = true;
+      clearInterval(intervalId);
+    }
 
     function attempt() {
       if (settled) return;
 
       const scope = getScope();
       const btn = findSwitchRoleButton(scope);
-      if (btn && areTextFieldsPopulated(scope)) {
-        settled = true;
-        clearInterval(intervalId);
-        finish("toastSwitched");
-        btn.click();
+      const ready = Boolean(btn) && areTextFieldsPopulated(scope);
+      if (!ready) {
+        readySince = null;
+      } else if (!readySince) {
+        readySince = Date.now();
+      }
+
+      if (ready && Date.now() - readySince >= READY_DELAY_MS) {
+        if (clicks === 0) {
+          // 初回だけ受け渡しの値を破棄して通知する。押し直しは同じページに残っている間だけ行う
+          finish("toastSwitched");
+        }
+        if (clicks < MAX_CLICKS && Date.now() - lastClickAt >= RETRY_INTERVAL_MS) {
+          clicks += 1;
+          lastClickAt = Date.now();
+          btn.click();
+        }
+        if (clicks >= MAX_CLICKS && Date.now() - lastClickAt >= RETRY_INTERVAL_MS) stop();
         return;
       }
 
-      if (Date.now() - startedAt > CLICK_TIMEOUT_MS) {
-        settled = true;
-        clearInterval(intervalId);
+      if (clicks === 0 && Date.now() - startedAt > CLICK_TIMEOUT_MS) {
+        stop();
         finish("toastSwitchFailed", "warn");
       }
     }
@@ -97,12 +124,7 @@
   }
 
   (async function main() {
-    let entry = null;
-    try {
-      entry = await chrome.runtime.sendMessage({ type: "peekPending", kind: "switch" });
-    } catch {
-      return; // 拡張機能の更新直後などでバックグラウンドに届かない
-    }
+    const entry = await accountDeckPeek("switch");
     if (!entry) return;
     watchAndClick();
   })();

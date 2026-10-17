@@ -1,11 +1,5 @@
 // 管理画面: 環境の登録・編集・削除・並べ替え、パスワードの守り方（マスターパスワード）、バックアップ、初回案内。
 
-// 紹介ページ（Official-Site）はストア公開後に作るので、それまではリンクしない
-const LINKS = {
-  privacy: "https://github.com/htani0817/account-deck-for-aws/blob/main/PRIVACY.md",
-  source: "https://github.com/htani0817/account-deck-for-aws",
-  issues: "https://github.com/htani0817/account-deck-for-aws/issues",
-};
 const ONBOARDING_KEY = "onboardingDone";
 const SECTIONS = ["environments", "settings", "about"];
 
@@ -894,9 +888,6 @@ $("welcomeImport").addEventListener("click", () => {
 
 async function renderAbout() {
   $("aboutVersion").textContent = chrome.runtime.getManifest().version;
-  $("linkPrivacy").href = LINKS.privacy;
-  $("linkSource").href = LINKS.source;
-  $("linkIssues").href = LINKS.issues;
   let shortcut = "";
   try {
     const commands = await chrome.commands.getAll();
@@ -941,6 +932,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
 });
 
 async function init() {
+  await loadI18n();
   applyI18n();
   $("searchIcon").append(icon("search"));
   $("addBtn").append(icon("plus"), t("actionAddEnv"));

@@ -10,7 +10,7 @@
 
   "typeLogin": { "message": "Sign-in" },
   "typeSwitchRole": { "message": "Switch role" },
-  "typeLoginHint": { "message": "Opens the AWS sign-in page and fills in the account, user name and password." },
+  "typeLoginHint": { "message": "Opens the AWS sign-in page, fills in the account, user name and password, and signs you in." },
   "typeSwitchRoleHint": { "message": "Switches to a role in another account. Sign in to the AWS console first." },
 
   "actionOpen": { "message": "Open" },
@@ -78,6 +78,8 @@
   "toastLocked": { "message": "Locked" },
   "toastFilled": { "message": "Filled in your sign-in details. Check them and sign in." },
   "toastFilledPartly": { "message": "Filled in some fields. Enter the rest yourself." },
+  "toastSigningIn": { "message": "Filled in your sign-in details. Signing in…" },
+  "toastSubmitNotFound": { "message": "Couldn't find the Sign in button. Press it yourself." },
   "toastFillFailed": { "message": "Couldn't find the sign-in fields. Enter your details yourself." },
   "toastSwitched": { "message": "Switching role…" },
   "toastSwitchFailed": { "message": "Couldn't find the Switch Role button. Press it yourself." },
@@ -126,7 +128,7 @@
   "passwordEncryptedHint": { "message": "Saved encrypted on this device." },
   "passwordSavedHint": { "message": "A password is saved. Type a new one only to replace it." },
   "fieldClearPassword": { "message": "Remove the saved password" },
-  "loginFillNote": { "message": "Open fills in the sign-in form. It never presses Sign in or enters MFA codes for you." },
+  "loginFillNote": { "message": "Open fills in the sign-in form and presses Sign in (without a saved password, it only fills the form). If you use MFA, enter your code afterwards." },
   "fieldRoleName": { "message": "Role name" },
   "switchRoleNote": { "message": "Switching roles works after you have signed in to the AWS Management Console." },
   "fieldMemo": { "message": "Note" },
@@ -193,11 +195,6 @@
   "aboutShortcut": { "message": "Open the popup" },
   "aboutShortcutNone": { "message": "No shortcut set" },
   "aboutShortcutChange": { "message": "Change" },
-  "aboutLinks": { "message": "Links" },
-  "aboutPrivacy": { "message": "Privacy policy" },
-  "aboutProductPage": { "message": "Product page" },
-  "aboutSource": { "message": "Source code" },
-  "aboutIssues": { "message": "Report a problem" },
   "aboutDisclaimer": { "message": "Account Deck for AWS is an independent tool and is not affiliated with, endorsed by or sponsored by Amazon Web Services, Inc. AWS and Amazon Web Services are trademarks of Amazon.com, Inc. or its affiliates." },
 
   "welcomeTitle": { "message": "Welcome to Account Deck for AWS" },
