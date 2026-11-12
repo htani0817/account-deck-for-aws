@@ -12,7 +12,7 @@ Amazon Web Services の公式ツールではありません。AWS、Amazon Web S
 
 ## インストール
 
-Chrome ウェブストアで公開の準備中です。
+[Chrome ウェブストア](https://chromewebstore.google.com/detail/account-deck-for-aws/bkbjbelaoncgpdlphmiemkdefhdkinnk)からインストールできます。
 
 ## 使い方
 
