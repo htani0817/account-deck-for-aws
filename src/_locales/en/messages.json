@@ -88,6 +88,7 @@
   "toastAdded": { "message": "Added “$1”" },
   "toastUpdated": { "message": "Saved “$1”" },
   "toastSaved": { "message": "Saved" },
+  "toastSecurityFailed": { "message": "Couldn't change the setting. Try again." },
   "toastMasterSet": { "message": "Master password set. Saved passwords are now protected by it." },
   "toastMasterChanged": { "message": "Master password changed" },
   "toastMasterRemoved": { "message": "Stopped using a master password" },

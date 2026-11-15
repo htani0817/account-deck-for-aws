@@ -628,59 +628,92 @@ function askNewMasterPassword(titleKey) {
   });
 }
 
-async function startMasterPassword() {
-  const pw = await askNewMasterPassword("setMasterTitle");
-  if (!pw) return;
-  await withUnlock(() => setMasterPassword(pw));
-  state.items = await getItems();
-  await renderSecurity();
-  showToast(t("toastMasterSet"));
+/**
+ * 鍵の設定を変える処理を実行する。途中で失敗したら知らせて、今の状態を描き直す
+ * （黙って止まると、設定が変わったのかどうか利用者に分からないため）。
+ * @returns {Promise<boolean>} 最後まで実行できたら true
+ */
+async function runSecurityAction(fn) {
+  try {
+    await fn();
+    return true;
+  } catch (e) {
+    console.error("security action failed", e);
+    showToast(t("toastSecurityFailed"), { tone: "warn" });
+    try {
+      state.items = await getItems();
+      renderList();
+      await renderSecurity();
+    } catch (e2) {
+      console.error("failed to re-render the security section", e2);
+    }
+    return false;
+  }
 }
 
-async function changeMasterPassword() {
-  if (!(await ensureUnlocked())) return;
-  const pw = await askNewMasterPassword("changeMasterTitle");
-  if (!pw) return;
-  await withUnlock(() => setMasterPassword(pw));
-  state.items = await getItems();
-  await renderSecurity();
-  showToast(t("toastMasterChanged"));
-}
-
-async function stopMasterPassword() {
-  if (!(await ensureUnlocked())) return;
-  const ok = await confirmAction({
-    title: t("removeMasterTitle"),
-    body: t("removeMasterBody"),
-    confirmLabel: t("actionRemoveMaster"),
-    danger: true,
+function startMasterPassword() {
+  return runSecurityAction(async () => {
+    const pw = await askNewMasterPassword("setMasterTitle");
+    if (!pw) return;
+    await withUnlock(() => setMasterPassword(pw));
+    state.items = await getItems();
+    await renderSecurity();
+    showToast(t("toastMasterSet"));
   });
-  if (!ok) return;
-  await withUnlock(() => removeMasterPassword());
-  state.items = await getItems();
-  await renderSecurity();
-  showToast(t("toastMasterRemoved"));
 }
 
-$("resetVaultBtn").addEventListener("click", async () => {
-  const ok = await confirmAction({
-    title: t("forgotTitle"),
-    body: t("forgotConfirmBody"),
-    confirmLabel: t("forgotAction"),
-    danger: true,
+function changeMasterPassword() {
+  return runSecurityAction(async () => {
+    if (!(await ensureUnlocked())) return;
+    const pw = await askNewMasterPassword("changeMasterTitle");
+    if (!pw) return;
+    await withUnlock(() => setMasterPassword(pw));
+    state.items = await getItems();
+    await renderSecurity();
+    showToast(t("toastMasterChanged"));
   });
-  if (!ok) return;
-  const removed = await resetForgottenMasterPassword();
-  state.items = await getItems();
-  renderList();
-  await renderSecurity();
-  showToast(t("toastVaultReset", [String(removed)]), { duration: 5000 });
-});
+}
 
-$("autoLock").addEventListener("change", async () => {
-  await setAutoLockMinutes(Number($("autoLock").value));
-  showToast(t("toastSaved"));
-});
+function stopMasterPassword() {
+  return runSecurityAction(async () => {
+    if (!(await ensureUnlocked())) return;
+    const ok = await confirmAction({
+      title: t("removeMasterTitle"),
+      body: t("removeMasterBody"),
+      confirmLabel: t("actionRemoveMaster"),
+      danger: true,
+    });
+    if (!ok) return;
+    await withUnlock(() => removeMasterPassword());
+    state.items = await getItems();
+    await renderSecurity();
+    showToast(t("toastMasterRemoved"));
+  });
+}
+
+$("resetVaultBtn").addEventListener("click", () =>
+  runSecurityAction(async () => {
+    const ok = await confirmAction({
+      title: t("forgotTitle"),
+      body: t("forgotConfirmBody"),
+      confirmLabel: t("forgotAction"),
+      danger: true,
+    });
+    if (!ok) return;
+    const removed = await resetForgottenMasterPassword();
+    state.items = await getItems();
+    renderList();
+    await renderSecurity();
+    showToast(t("toastVaultReset", [String(removed)]), { duration: 5000 });
+  })
+);
+
+$("autoLock").addEventListener("change", () =>
+  runSecurityAction(async () => {
+    await setAutoLockMinutes(Number($("autoLock").value));
+    showToast(t("toastSaved"));
+  })
+);
 
 // --- バックアップ ---
 
@@ -733,7 +766,8 @@ $("exForm").addEventListener("submit", async (e) => {
   document.body.append(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  // ダウンロードが始まる前に取り消さないよう、少し待ってから破棄する
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
   showToast(t("toastExported"));
 });
 
@@ -860,15 +894,17 @@ $("welcomeStep1").addEventListener("submit", async (e) => {
       return;
     }
     $("welcomeNext").disabled = true;
+    let done = false;
     try {
-      await withUnlock(() => setMasterPassword(p1));
+      done = await runSecurityAction(() => withUnlock(() => setMasterPassword(p1)));
     } finally {
       $("welcomeNext").disabled = false;
     }
+    if (!done) return; // 失敗は通知済み。同じ手順にとどまり、やり直せるようにする
     $("wPass1").value = "";
     $("wPass2").value = "";
-  } else {
-    await ensureVault();
+  } else if (!(await runSecurityAction(() => ensureVault()))) {
+    return;
   }
   showWelcomeStep(2);
 });
