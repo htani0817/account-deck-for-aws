@@ -101,8 +101,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // 拡張機能の外（Webページ）から送られたメッセージは受け付けない
   if (sender.id !== chrome.runtime.id) return false;
 
-  const respond = (promise) => {
-    promise.then(sendResponse, () => sendResponse({ ok: false, error: "internal" }));
+  // 処理を非同期で行い、終わったら（失敗しても）必ず応答を返す
+  const respond = (handler) => {
+    (async () => {
+      try {
+        sendResponse(await handler());
+      } catch (e) {
+        console.error("message handler failed", e);
+        sendResponse({ ok: false, error: "internal" });
+      }
+    })();
     return true; // 非同期で応答する
   };
 
@@ -110,11 +118,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case "launch":
       // ポップアップ・管理画面（拡張機能のページ）からだけ受け付ける
       if (sender.tab && !String(sender.url || "").startsWith(chrome.runtime.getURL(""))) return false;
-      return respond(handleLaunch(message.itemId));
+      return respond(() => handleLaunch(message.itemId));
     case "peekPending":
-      return respond(handlePeek(sender, message.kind));
+      return respond(() => handlePeek(sender, message.kind));
     case "pendingDone":
-      return respond(handleDone(sender).then(() => ({ ok: true })));
+      return respond(async () => {
+        await handleDone(sender);
+        return { ok: true };
+      });
     default:
       return false;
   }
@@ -129,8 +140,17 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 });
 
 chrome.runtime.onInstalled.addListener(async (details) => {
-  await migrateLegacyData();
+  // 移行に失敗しても初回案内は開く（移行は管理画面・ポップアップを開いたときにもやり直される）
+  try {
+    await migrateLegacyData();
+  } catch (e) {
+    console.error("legacy data migration failed", e);
+  }
   if (details.reason === "install") {
-    chrome.tabs.create({ url: chrome.runtime.getURL("options.html#welcome") });
+    try {
+      await chrome.tabs.create({ url: chrome.runtime.getURL("options.html#welcome") });
+    } catch (e) {
+      console.error("failed to open the welcome page", e);
+    }
   }
 });

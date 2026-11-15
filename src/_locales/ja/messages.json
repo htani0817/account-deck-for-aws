@@ -88,6 +88,7 @@
   "toastAdded": { "message": "「$1」を追加しました" },
   "toastUpdated": { "message": "「$1」を保存しました" },
   "toastSaved": { "message": "保存しました" },
+  "toastSecurityFailed": { "message": "設定を変更できませんでした。もう一度お試しください。" },
   "toastMasterSet": { "message": "マスターパスワードを設定しました。保存したパスワードはこれで守られます。" },
   "toastMasterChanged": { "message": "マスターパスワードを変更しました" },
   "toastMasterRemoved": { "message": "マスターパスワードをやめました" },

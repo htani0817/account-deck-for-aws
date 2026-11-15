@@ -182,11 +182,16 @@ function select(index, scroll) {
   if (scroll !== false) rows[state.selected].scrollIntoView({ block: "nearest" });
 }
 
-function setType(type) {
+async function setType(type) {
   state.type = type;
   state.selected = 0;
-  chrome.storage.local.set({ [ACTIVE_TAB_STORAGE_KEY]: type });
   render();
+  // 選んだタブを覚えておく（覚えられなくても表示はそのまま続ける）
+  try {
+    await chrome.storage.local.set({ [ACTIVE_TAB_STORAGE_KEY]: type });
+  } catch (e) {
+    console.error("failed to save the active tab", e);
+  }
 }
 
 // --- 操作 ---
@@ -214,13 +219,21 @@ async function copyPassword(item, button) {
   }
 }
 
+// 「開く」の応答を待っている間は次の「開く」を受け付けない。
+// クリックと Enter が重なると同じ環境のタブが2つ開き、両方でサインインボタンが押されてしまうため
+let launching = false;
+
 async function launch(item) {
+  if (launching) return;
+  launching = true;
   let res;
   try {
     res = await sendToBackground({ type: "launch", itemId: item.id });
   } catch {
     res = { ok: false };
   }
+  // 成功したらポップアップを閉じるので、フラグは失敗・ロック解除へ進むときだけ戻す
+  if (!res || !res.ok) launching = false;
   if (res && res.locked) {
     askUnlock(() => launch(item));
     return;
@@ -311,6 +324,8 @@ document.addEventListener("keydown", (e) => {
     case "Enter":
       // ボタンにフォーカスがあるときはそのボタンの動作に任せる
       if (document.activeElement && document.activeElement.tagName === "BUTTON") return;
+      // 押しっぱなしのキーリピートでは開かない
+      if (e.repeat) return;
       if (!items.length) return;
       e.preventDefault();
       launch(items[state.selected]);

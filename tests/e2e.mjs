@@ -206,6 +206,26 @@ test("開く: リダイレクトや画面の作り直しをはさんでも入力
   await tab.close();
 });
 
+test("開く: 行を素早く2回押しても、タブは1つだけ開く", async () => {
+  const popup = await openPopup("login");
+  const opened = [];
+  const onPage = (p) => opened.push(p);
+  ctx.context.on("page", onPage);
+  try {
+    // 行のクリックは「開く」と同じ動き。ダブルクリックで2回続けて送らせる
+    await popup.locator(".row", { hasText: "ステージング" }).locator(".name").dblclick();
+    // 開けたらポップアップは閉じるので、ページではなくこちら側で待つ
+    await new Promise((r) => setTimeout(r, 2500));
+    const signins = opened.filter((p) => /signin\.aws\.amazon\.com/.test(p.url()));
+    assert.equal(signins.length, 1, "サインインのタブは1つだけ");
+    assert.equal(await waitSubmitted(signins[0]), "SUBMITTED1:444455556666|ops-admin|sample-password-2");
+  } finally {
+    ctx.context.off("page", onPage);
+    for (const p of opened) await p.close().catch(() => {});
+    await popup.close().catch(() => {});
+  }
+});
+
 test("パスワードを保存していない環境は、入力するだけで押さない", async () => {
   const tab = await launchFromPopup("検証用サンドボックス");
   await waitFilledAfterResets(tab, '#root input[placeholder="IAM username"]');
